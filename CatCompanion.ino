@@ -1,5 +1,5 @@
 /*
-  CatCompanion 2019 © All Rights Reserved
+  CatCompanion 2020 © All Rights Reserved
   Author: Wit Zieliński (ziewit@gmail.com)
   Project: https://github.com/witko0/catcompanion
 */
@@ -32,12 +32,7 @@ const int ECHO_PIN_L = 9;  // left distance sensor echo pin
 
 // loop counter
 int counter = 1;
-
-enum DistanceSensorID {
-  MIDDLE,
-  RIGHT,
-  LEFT
-};
+int distance_mid, distance_l, distance_r;
 
 void setup()
 {
@@ -78,11 +73,9 @@ void setup()
 
 void loop()
 {
-   int distance_mid, distance_l, distance_r;
-
-   distance_mid = get_distance(MIDDLE);
-   distance_l = get_distance(LEFT);
-   distance_r = get_distance(RIGHT);
+   distance_mid = get_distance_mid();
+   distance_l = get_distance_l();
+   distance_r = get_distance_r();
 
    if ((distance_mid < 50) || (distance_l < 30) || (distance_r < 30))
    {
@@ -92,20 +85,22 @@ void loop()
       delay(800);
 
       tail_movement_long();
+      delay(200);
 
       while ((distance_mid < 50) || (distance_l < 30) || (distance_r < 30))
       {
          wheels("turnright");
          delay(200);
+         wheels("stop");
 
-         distance_mid = get_distance(MIDDLE);
-         distance_l = get_distance(LEFT);
-         distance_r = get_distance(RIGHT);
+         distance_mid = get_distance_mid();
+         distance_l = get_distance_l();
+         distance_r = get_distance_r();
       }
  
       digitalWrite(LED_BUILTIN, LOW);
       wheels("stop");
-      delay(200);
+      delay(300);
    }
    else
    {
@@ -117,45 +112,49 @@ void loop()
    counter++;
 }
 
-int get_distance(DistanceSensorID id)
+int get_distance_mid()
 {
    long impulse_time, distance;
-   int TRIG_PIN, ECHO_PIN;
 
-   switch (id)
-   {
-      case MIDDLE:
-      {
-         TRIG_PIN = TRIG_PIN_M;
-         ECHO_PIN = ECHO_PIN_M;
-      }
-      break;
-
-      case RIGHT:
-      {
-         TRIG_PIN = TRIG_PIN_R;
-         ECHO_PIN = ECHO_PIN_R;
-      }
-      break;
-
-      case LEFT:
-      {
-         TRIG_PIN = TRIG_PIN_L;
-         ECHO_PIN = ECHO_PIN_L;
-      }
-      break;
-
-      default:
-         return 0;
-   }
-
-   digitalWrite(TRIG_PIN, LOW);
+   digitalWrite(TRIG_PIN_M, LOW);
    delayMicroseconds(2);
-   digitalWrite(TRIG_PIN, HIGH);
+   digitalWrite(TRIG_PIN_M, HIGH);
    delayMicroseconds(10);
-   digitalWrite(TRIG_PIN, LOW);
+   digitalWrite(TRIG_PIN_M, LOW);
 
-   impulse_time = pulseIn(ECHO_PIN, HIGH);
+   impulse_time = pulseIn(ECHO_PIN_M, HIGH);
+   distance = impulse_time / 58;
+
+   return distance;
+}
+
+int get_distance_l()
+{
+   long impulse_time, distance;
+
+   digitalWrite(TRIG_PIN_L, LOW);
+   delayMicroseconds(2);
+   digitalWrite(TRIG_PIN_L, HIGH);
+   delayMicroseconds(10);
+   digitalWrite(TRIG_PIN_L, LOW);
+
+   impulse_time = pulseIn(ECHO_PIN_L, HIGH);
+   distance = impulse_time / 58;
+
+   return distance;
+}
+
+int get_distance_r()
+{
+   long impulse_time, distance;
+
+   digitalWrite(TRIG_PIN_R, LOW);
+   delayMicroseconds(2);
+   digitalWrite(TRIG_PIN_R, HIGH);
+   delayMicroseconds(10);
+   digitalWrite(TRIG_PIN_R, LOW);
+
+   impulse_time = pulseIn(ECHO_PIN_R, HIGH);
    distance = impulse_time / 58;
 
    return distance;
